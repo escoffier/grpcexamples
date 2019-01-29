@@ -85,12 +85,31 @@ public class RouteGuideServer {
 
         @Override
         public void getFeature(Point request, StreamObserver<Feature> responseObserver) {
-            super.getFeature(request, responseObserver);
+            //super.getFeature(request, responseObserver);
+            responseObserver.onNext(checkFeature(request));
+            responseObserver.onCompleted();
         }
 
         @Override
         public void listFeatures(Rectangle request, StreamObserver<Feature> responseObserver) {
-            super.listFeatures(request, responseObserver);
+            //super.listFeatures(request, responseObserver);
+            int left = min(request.getLo().getLongitude(), request.getHi().getLongitude());
+            int right = max(request.getLo().getLongitude(), request.getHi().getLongitude());
+            int top = max(request.getLo().getLatitude(), request.getHi().getLatitude());
+            int bottom = min(request.getLo().getLatitude(), request.getHi().getLatitude());
+
+            for(Feature feature : features) {
+                if (!RouteGuideUtil.exists(feature)) {
+                    continue;
+                }
+
+                int lat = feature.getLocation().getLatitude();
+                int lon = feature.getLocation().getLongitude();
+                if (lon >= left && lon <= right && lat >= bottom && lat <= top) {
+                    responseObserver.onNext(feature);
+                }
+            }
+            responseObserver.onCompleted();
         }
 
         /**
@@ -119,6 +138,7 @@ public class RouteGuideServer {
                         distance += calcDistance(previous, value);
                     }
                     previous = value;
+                    logger.info("Get points: " + value.toString());
                 }
 
                 @Override
@@ -130,6 +150,7 @@ public class RouteGuideServer {
                 public void onCompleted() {
                     long seconds = NANOSECONDS.toSeconds(System.nanoTime() - startTime);
 
+                    logger.info(" send response");
                     responseObserver.onNext(RouteSummary.newBuilder()
                             .setPointCount(pointCount)
                             .setFeatureCount(featureCount)
@@ -137,15 +158,37 @@ public class RouteGuideServer {
                             .setElapsedTime((int)seconds).build());
 
                     responseObserver.onCompleted();
-
                 }
             };
             //return super.recordRoute(responseObserver);
         }
 
         @Override
-        public StreamObserver<RouteNote> routeChat(StreamObserver<RouteNote> responseObserver) {
-            return super.routeChat(responseObserver);
+        public StreamObserver<RouteNote> routeChat(final StreamObserver<RouteNote> responseObserver) {
+            //return super.routeChat(responseObserver);
+            return new StreamObserver<RouteNote>() {
+                @Override
+                public void onNext(RouteNote note) {
+                    List<RouteNote> notes = getOrCreateNotes(note.getLocation());
+//
+//                    // Respond with all previous notes at this location.
+                   for (RouteNote prevNote : notes.toArray(new RouteNote[0])) {
+                       responseObserver.onNext(prevNote);
+                   }
+                    notes.add(note);
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    logger.log(Level.WARNING, "routeChat cancelled");
+                }
+
+                @Override
+                public void onCompleted() {
+                    responseObserver.onCompleted();
+
+                }
+            };
         }
 
         /**

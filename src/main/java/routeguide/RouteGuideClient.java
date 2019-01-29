@@ -99,6 +99,7 @@ public class RouteGuideClient {
         Iterator<Feature> features;
         try {
             features = blockingStub.listFeatures(request);
+
             for (int i = 1; features.hasNext(); i++) {
                 Feature feature = features.next();
                 info("Result #" + i + ": {0}", feature);
@@ -151,15 +152,12 @@ public class RouteGuideClient {
             for (int i = 0; i < numPoints; ++i) {
                 int index = random.nextInt(features.size());
                 Point point = features.get(index).getLocation();
-
                 requestObserver.onNext(point);
             }
-
         } catch (RuntimeException ex) {
             requestObserver.onError(ex);
             throw ex;
         }
-
         requestObserver.onCompleted();
 
         // Receiving happens asynchronously
@@ -168,8 +166,51 @@ public class RouteGuideClient {
         }
     }
 
+    public CountDownLatch routeChat() {
+        final CountDownLatch finishLatch = new CountDownLatch(1);
+        StreamObserver<RouteNote> requestObserver = new StreamObserver<RouteNote>() {
+            //response
+            @Override
+            public void onNext(RouteNote note) {
+                info("Got message \"{0}\" at {1}, {2}", note.getMessage(), note.getLocation()
+                        .getLatitude(), note.getLocation().getLongitude());
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                warning("RouteChat Failed: {0}", Status.fromThrowable(t));
+                finishLatch.countDown();
+            }
+
+            @Override
+            public void onCompleted() {
+                info("Finished RouteChat");
+                finishLatch.countDown();
+            }
+        };
+
+        try {
+            RouteNote[] requests =
+                    {newNote("First message", 0, 0), newNote("Second message", 0, 1),
+                            newNote("Third message", 1, 0), newNote("Fourth message", 1, 1)};
+
+            for(RouteNote routeNote : requests) {
+                requestObserver.onNext(routeNote);
+            }
+
+        } catch (RuntimeException e) {
+            requestObserver.onError(e);
+        }
+
+        requestObserver.onCompleted();
+        return finishLatch;
+    }
+
     /** Issues several different requests and then exits. */
     public static void main(String[] args) throws InterruptedException {
+
+        Logger.getLogger("io.grpc").setLevel(Level.FINEST);
+
         List<Feature> features;
         try {
             features = RouteGuideUtil.parseFeatures(RouteGuideUtil.getDefaultFeaturesFile());
@@ -181,10 +222,26 @@ public class RouteGuideClient {
         RouteGuideClient client = new RouteGuideClient("localhost", 7860);
 
         try {
-            client.recordRoute(features, 10);
+            //client.recordRoute(features, 10);
+
+            client.getFeature(409146138, -746188906);
+
+            client.listFeatures(400000000, -750000000, 420000000, -730000000);
+
+            CountDownLatch finishLatch = client.routeChat();
+
+            if (!finishLatch.await(1, TimeUnit.MINUTES)) {
+                client.warning("routeChat can not finish within 1 minutes");
+            }
+
         } finally {
             client.shutdown();
         }
+    }
+
+    private RouteNote newNote(String message, int lat, int lon) {
+        return RouteNote.newBuilder().setMessage(message)
+                .setLocation(Point.newBuilder().setLatitude(lat).setLongitude(lon).build()).build();
     }
 
     /**
