@@ -2,6 +2,7 @@ package helloworld;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.netflix.hystrix.HystrixCommand;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
@@ -50,10 +51,15 @@ public class HelloWorldClient {
         try {
             response = blockingStub.sayHello(request);
         } catch (StatusRuntimeException e) {
-            logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
+            logger.log(Level.WARNING, "------greet RPC failed: {0}", e.getStatus());
             return;
         }
         logger.info("Greeting: " + response.getMessage());
+    }
+
+    public HelloReply greeting(String name){
+        HelloRequest request = HelloRequest.newBuilder().setName(name).build();
+        return  blockingStub.sayHello(request);
     }
 
     public void futureDirectGreet(String name) {
@@ -116,9 +122,9 @@ public class HelloWorldClient {
             }
             client.greet(user);
 
-            client.asyncGreet("qunfeng");
+            //client.asyncGreet("qunfeng");
 
-            client.futureDirectGreet("qunfengqiu");
+            //client.futureDirectGreet("qunfengqiu");
         } finally {
             client.shutdown();
         }

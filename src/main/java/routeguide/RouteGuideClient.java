@@ -222,17 +222,17 @@ public class RouteGuideClient {
         RouteGuideClient client = new RouteGuideClient("localhost", 7860);
 
         try {
-            //client.recordRoute(features, 10);
+            client.recordRoute(features, 10);
 
-            client.getFeature(409146138, -746188906);
-
-            client.listFeatures(400000000, -750000000, 420000000, -730000000);
-
-            CountDownLatch finishLatch = client.routeChat();
-
-            if (!finishLatch.await(1, TimeUnit.MINUTES)) {
-                client.warning("routeChat can not finish within 1 minutes");
-            }
+//            client.getFeature(409146138, -746188906);
+//
+//            client.listFeatures(400000000, -750000000, 420000000, -730000000);
+//
+//            CountDownLatch finishLatch = client.routeChat();
+//
+//            if (!finishLatch.await(1, TimeUnit.MINUTES)) {
+//                client.warning("routeChat can not finish within 1 minutes");
+//            }
 
         } finally {
             client.shutdown();

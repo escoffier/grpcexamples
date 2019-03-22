@@ -76,6 +76,7 @@ public class RouteGuideServer {
     }
 
     static class RouteGuideService extends RouteGuideGrpc.RouteGuideImplBase {
+        //A feature names something at a given point.
         private final Collection<Feature> features;
         private final ConcurrentMap<Point, List<RouteNote>> routeNotes = new ConcurrentHashMap<>();
 
