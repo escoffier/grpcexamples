@@ -18,7 +18,8 @@ public class HelloWorldCommand extends HystrixCommand<HelloReply> {
     public HelloWorldCommand() {
         //super(setter);
         super(Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("HelloWorld"))
-                .andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withCircuitBreakerForceOpen(true))
+                .andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withCircuitBreakerForceOpen(false))
+                .andCommandPropertiesDefaults(HystrixCommandProperties.Setter().withCircuitBreakerErrorThresholdPercentage(50))
                 .andThreadPoolPropertiesDefaults(HystrixThreadPoolProperties.Setter().withCoreSize(10)));
 
         ConfigurationManager.getConfigInstance().setProperty("hystrix.threadpool.default.coreSize", 8);
@@ -35,11 +36,16 @@ public class HelloWorldCommand extends HystrixCommand<HelloReply> {
 
     @Override
     protected HelloReply getFallback() {
-        return HelloReply.newBuilder().setMessage("nothing").build();
+        return HelloReply.newBuilder().setMessage("fallback").build();
     }
 
     @Override
     protected HelloReply run() throws Exception {
+
+        if (Math.random() > 0.80) {
+            throw new RuntimeException("random failure loading order over network");
+        }
+
         HelloReply helloReply = helloWorldClient.greeting("robbies");
         return helloReply;
     }
