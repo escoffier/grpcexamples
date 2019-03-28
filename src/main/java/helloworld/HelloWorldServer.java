@@ -52,6 +52,14 @@ public class HelloWorldServer {
             responseObserver.onCompleted();
             //super.sayHello(request, responseObserver);
         }
+
+        @Override
+        public void getName(IdMessage request, StreamObserver<NameMessage> responseObserver) {
+            //super.getName(request, responseObserver);
+            NameMessage nameMessage = NameMessage.newBuilder().setName("escoffier").build();
+            responseObserver.onNext(nameMessage);
+            responseObserver.onCompleted();
+        }
     }
 
     /**

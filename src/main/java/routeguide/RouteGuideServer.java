@@ -26,7 +26,6 @@ public class RouteGuideServer {
 
     public RouteGuideServer(int port) throws IOException {
         this(port, RouteGuideUtil.getDefaultFeaturesFile());
-
     }
 
     public RouteGuideServer(int port, URL featureFile) throws IOException {
@@ -40,7 +39,7 @@ public class RouteGuideServer {
 
     public void start() throws IOException {
         server.start();
-        logger.info("Server started, listening on " + port);
+        logger.info("RouteGuideServer started, listening on " + port);
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override

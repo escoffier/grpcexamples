@@ -121,7 +121,6 @@
             <artifactId>resilience4j-timelimiter</artifactId>
             <version>0.13.2</version>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -193,7 +192,8 @@
                             <transformers>
                                 <!-- add Main-Class to manifest file -->
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>helloworld.HelloWorldServer</mainClass>
+                                    <!--<mainClass>helloworld.HelloWorldServer</mainClass>-->
+                                    <mainClass>${appname}</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
@@ -205,7 +205,32 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>HelloWorldServer</id>
+            <activation>
+                <property>
+                    <name>app</name>
+                    <value>HelloWorldServer</value>
+                </property>
+            </activation>
+            <properties>
+                <appname>helloworld.HelloWorldServer</appname>
+            </properties>
+        </profile>
 
-
+        <profile>
+            <id>RouteGuideServer</id>
+            <activation>
+                <property>
+                    <name>app</name>
+                    <value>RouteGuideServer</value>
+                </property>
+            </activation>
+            <properties>
+                <appname>routeguide.RouteGuideServer</appname>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

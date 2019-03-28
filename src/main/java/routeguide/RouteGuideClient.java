@@ -35,6 +35,7 @@ public class RouteGuideClient {
     /** Construct client for accessing RouteGuide server using the existing channel. */
     public RouteGuideClient(ManagedChannelBuilder<?> channelBuilder) {
         channel = channelBuilder.build();
+
         blockingStub = RouteGuideGrpc.newBlockingStub(channel);
         asyncStub = RouteGuideGrpc.newStub(channel);
     }

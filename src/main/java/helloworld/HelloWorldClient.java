@@ -47,19 +47,27 @@ public class HelloWorldClient {
     public void greet(String name) {
         logger.info("Will try to greet " + name + " ...");
         HelloRequest request = HelloRequest.newBuilder().setName(name).build();
-        HelloReply response;
+        HelloReply response = null;
         try {
             response = blockingStub.sayHello(request);
         } catch (StatusRuntimeException e) {
             logger.log(Level.WARNING, "------greet RPC failed: {0}", e.getStatus());
-            return;
+        } finally {
+            if (response != null) {
+                logger.info("Greeting: " + response.getMessage());
+            }
         }
-        logger.info("Greeting: " + response.getMessage());
+
     }
 
     public HelloReply greeting(String name){
         HelloRequest request = HelloRequest.newBuilder().setName(name).build();
         return  blockingStub.sayHello(request);
+    }
+
+    public NameMessage getName(String id) {
+        IdMessage idMessage = IdMessage.newBuilder().setId(id).build();
+        return blockingStub.getName(idMessage);
     }
 
     public void futureDirectGreet(String name) {
