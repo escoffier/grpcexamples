@@ -121,9 +121,21 @@
             <artifactId>resilience4j-timelimiter</artifactId>
             <version>0.13.2</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.orbitz.consul</groupId>
+            <artifactId>consul-client</artifactId>
+            <version>1.3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.orbitz.consul</groupId>
+            <artifactId>consul-client</artifactId>
+            <version>1.3.3</version>
+        </dependency>
     </dependencies>
 
     <build>
+        <finalName>${jarName}</finalName>
         <extensions>
             <extension>
                 <groupId>kr.motd.maven</groupId>
@@ -216,6 +228,7 @@
             </activation>
             <properties>
                 <appname>helloworld.HelloWorldServer</appname>
+                <jarName>HelloWorldServer</jarName>
             </properties>
         </profile>
 
@@ -229,6 +242,21 @@
             </activation>
             <properties>
                 <appname>routeguide.RouteGuideServer</appname>
+                <jarName>RouteGuideServer</jarName>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>RouteGuideClient</id>
+            <activation>
+                <property>
+                    <name>app</name>
+                    <value>RouteGuideClient</value>
+                </property>
+            </activation>
+            <properties>
+                <appname>routeguide.RouteGuideClient</appname>
+                <jarName>RouteGuideClient</jarName>
             </properties>
         </profile>
     </profiles>

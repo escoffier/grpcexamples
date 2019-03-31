@@ -1,15 +1,17 @@
 package routeguide;
 
+import com.google.common.net.HostAndPort;
+import com.orbitz.consul.AgentClient;
+import com.orbitz.consul.Consul;
+import com.orbitz.consul.model.agent.ImmutableRegistration;
+import com.orbitz.consul.model.agent.Registration;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
@@ -35,6 +37,26 @@ public class RouteGuideServer {
     public RouteGuideServer(ServerBuilder<?> serverBuilder, int port, Collection<Feature> features) {
         this.port = port;
         server = serverBuilder.addService(new RouteGuideService(features)).build();
+
+        Consul client =  Consul.builder().withHostAndPort(HostAndPort.fromParts("140.143.45.252", 8500))
+                .build();
+
+        AgentClient agentClient = client.agentClient();
+
+        Random random = new Random();
+        String serviceId = "RouteGuideServer-" + random.nextInt();
+
+        Registration service = ImmutableRegistration.builder()
+                .id(serviceId)
+                .name("RouteGuideServer")
+                .port(7860)
+                .tags(Collections.singletonList("tag1"))
+                .meta(Collections.singletonMap("version", "1.0"))
+                .build();
+
+        agentClient.register(service);
+
+        //agentClient.pass(serviceId);
     }
 
     public void start() throws IOException {

@@ -13,6 +13,8 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,7 +72,8 @@ public class RouteGuideDemo {
         Feature feature = featureTry.get();
 
         if (RouteGuideUtil.exists(feature)) {
-            info("Found feature called \"{0}\" at {1}, {2}",
+
+            info("Found a feature called \"{0}\" at {1}, {2}",
                     feature.getName(),
                     RouteGuideUtil.getLatitude(feature.getLocation()),
                     RouteGuideUtil.getLongitude(feature.getLocation()));
@@ -98,19 +101,45 @@ public class RouteGuideDemo {
 
     public static void main(String[] args) throws Exception {
         RouteGuideDemo.init();
-        RouteGuideDemo routeGuideDemo = new RouteGuideDemo("192.168.21.225", 7860);
+        RouteGuideDemo routeGuideDemo = new RouteGuideDemo("140.143.45.252", 7860);
 
         //int lat = (int) 19146138 * Math.random();
-        for (int i = 0; i < 1000; i++) {
-            //int lat = getRandomNumberInRange(400146138, 419146138);
-            //int lon = -getRandomNumberInRange(740188906, 749188906);
-            //routeGuideDemo.getFeature(409146138, -746188906);
-            Random r = new Random();
-            int index = r.nextInt(features.size());
-            int lat = features.get(index).getLocation().getLatitude();
-            int lon = features.get(index).getLocation().getLongitude();
-            info("request location: {0} , {1}", lat, lon );
-            routeGuideDemo.getFeature(lat, lon);
+
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+
+        for (int j = 0; j < 4; j++) {
+            executorService.execute(() -> {
+                for (int i = 0; i < 20; i++) {
+                    //int lat = getRandomNumberInRange(400146138, 419146138);
+                    //int lon = -getRandomNumberInRange(740188906, 749188906);
+                    //routeGuideDemo.getFeature(409146138, -746188906);
+                    Random r = new Random();
+                    int index = r.nextInt(features.size());
+                    int lat = features.get(index).getLocation().getLatitude();
+                    int lon = features.get(index).getLocation().getLongitude();
+                    info("request location: {0} , {1}", lat, lon);
+                    long start = System.nanoTime();
+                    routeGuideDemo.getFeature(lat, lon);
+                    long estimatedTime = System.nanoTime() - start;
+                    logger.info("estimatedTime: " + estimatedTime);
+                }
+            });
         }
+
+//        for (int i = 0; i < 10; i++) {
+//            //int lat = getRandomNumberInRange(400146138, 419146138);
+//            //int lon = -getRandomNumberInRange(740188906, 749188906);
+//            //routeGuideDemo.getFeature(409146138, -746188906);
+//            Random r = new Random();
+//            int index = r.nextInt(features.size());
+//            int lat = features.get(index).getLocation().getLatitude();
+//            int lon = features.get(index).getLocation().getLongitude();
+//            info("request location: {0} , {1}", lat, lon );
+//            long start = System.nanoTime();
+//            routeGuideDemo.getFeature(lat, lon);
+//            long estimatedTime = System.nanoTime() - start;
+//            logger.info("estimatedTime: "  + estimatedTime);
+//        }
+
     }
 }

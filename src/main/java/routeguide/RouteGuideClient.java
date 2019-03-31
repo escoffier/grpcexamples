@@ -44,7 +44,7 @@ public class RouteGuideClient {
         channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
     }
 
-    private void info(String msg, Object... params) {
+    private static void info(String msg, Object... params) {
         logger.log(Level.INFO, msg, params);
     }
 
@@ -73,6 +73,20 @@ public class RouteGuideClient {
             }
             return;
         }
+        logFeature(feature);
+//        if (RouteGuideUtil.exists(feature)) {
+//            info("Found feature called \"{0}\" at {1}, {2}",
+//                    feature.getName(),
+//                    RouteGuideUtil.getLatitude(feature.getLocation()),
+//                    RouteGuideUtil.getLongitude(feature.getLocation()));
+//        } else {
+//            info("Found no feature at {0}, {1}",
+//                    RouteGuideUtil.getLatitude(feature.getLocation()),
+//                    RouteGuideUtil.getLongitude(feature.getLocation()));
+//        }
+    }
+
+    private void logFeature(Feature feature) {
         if (RouteGuideUtil.exists(feature)) {
             info("Found feature called \"{0}\" at {1}, {2}",
                     feature.getName(),
@@ -83,6 +97,28 @@ public class RouteGuideClient {
                     RouteGuideUtil.getLatitude(feature.getLocation()),
                     RouteGuideUtil.getLongitude(feature.getLocation()));
         }
+    }
+
+    public void getFeaturesAsync(int lat, int lon, CountDownLatch latch) {
+        Point request = Point.newBuilder().setLatitude(lat).setLongitude(lon).build();
+
+        //StreamObserver<Feature> streamObserver = new StreamObserver<Feature>
+        asyncStub.getFeature( request, new StreamObserver<Feature>() {
+            @Override
+            public void onNext(Feature feature) {
+                logFeature(feature);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onCompleted() {
+                latch.countDown();
+            }
+        });
     }
 
     /**
@@ -220,10 +256,13 @@ public class RouteGuideClient {
             return;
         }
 
-        RouteGuideClient client = new RouteGuideClient("localhost", 7860);
+        final int REUESTNUM = 50000;
 
+        RouteGuideClient client = new RouteGuideClient("140.143.45.252", 7860);
+        CountDownLatch finishLatch = new CountDownLatch(REUESTNUM);
+        long start = System.nanoTime();
         try {
-            client.recordRoute(features, 10);
+            //client.recordRoute(features, 10);
 
 //            client.getFeature(409146138, -746188906);
 //
@@ -235,7 +274,26 @@ public class RouteGuideClient {
 //                client.warning("routeChat can not finish within 1 minutes");
 //            }
 
+
+            for (int i = 0; i < REUESTNUM; i++) {
+                //int lat = getRandomNumberInRange(400146138, 419146138);
+                //int lon = -getRandomNumberInRange(740188906, 749188906);
+                //routeGuideDemo.getFeature(409146138, -746188906);
+                Random random = new Random();
+                int index = random.nextInt(features.size());
+                int lat = features.get(index).getLocation().getLatitude();
+                int lon = features.get(index).getLocation().getLongitude();
+                info("request location: {0} , {1}", lat, lon);
+                //long start = System.nanoTime();
+                client.getFeaturesAsync(lat, lon, finishLatch);
+                //long estimatedTime = System.nanoTime() - start;
+                //logger.info("estimatedTime: " + estimatedTime);
+            }
+
         } finally {
+            finishLatch.await(10,  TimeUnit.MINUTES);
+            long estimatedTime = System.nanoTime() - start;
+            logger.info("estimatedTime: " + estimatedTime);
             client.shutdown();
         }
     }
