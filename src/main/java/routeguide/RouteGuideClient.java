@@ -1,5 +1,6 @@
 package routeguide;
 
+import com.google.common.net.HostAndPort;
 import com.google.protobuf.Message;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -11,6 +12,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,6 +26,7 @@ public class RouteGuideClient {
     private final ManagedChannel channel;
     private final RouteGuideGrpc.RouteGuideBlockingStub blockingStub;
     private final RouteGuideGrpc.RouteGuideStub asyncStub;
+    private LoadBalancer loadBalancer;
 
     private Random random = new Random();
     private TestHelper testHelper;
@@ -35,9 +39,14 @@ public class RouteGuideClient {
     /** Construct client for accessing RouteGuide server using the existing channel. */
     public RouteGuideClient(ManagedChannelBuilder<?> channelBuilder) {
         channel = channelBuilder.build();
-
         blockingStub = RouteGuideGrpc.newBlockingStub(channel);
         asyncStub = RouteGuideGrpc.newStub(channel);
+
+        loadBalancer = new LoadBalancer("192.168.21.248", 8500);
+        HostAndPort hostAndPort = loadBalancer.getService("RouteGuideServer");
+        info(hostAndPort.toString());
+
+        loadBalancer.subscibe("RouteGuideServer");
     }
 
     public void shutdown() throws InterruptedException {
@@ -256,46 +265,87 @@ public class RouteGuideClient {
             return;
         }
 
-        final int REUESTNUM = 50000;
+        final int REUESTNUM = 1;
 
-        RouteGuideClient client = new RouteGuideClient("140.143.45.252", 7860);
-        CountDownLatch finishLatch = new CountDownLatch(REUESTNUM);
-        long start = System.nanoTime();
-        try {
-            //client.recordRoute(features, 10);
+        //RouteGuideClient client = new RouteGuideClient("192.168.21.225", 7860);
+        //RouteGuideClient client1 = new RouteGuideClient("192.168.21.225", 7860);
+        //CountDownLatch finishLatch = new CountDownLatch(REUESTNUM);
 
-//            client.getFeature(409146138, -746188906);
-//
-//            client.listFeatures(400000000, -750000000, 420000000, -730000000);
-//
-//            CountDownLatch finishLatch = client.routeChat();
-//
-//            if (!finishLatch.await(1, TimeUnit.MINUTES)) {
-//                client.warning("routeChat can not finish within 1 minutes");
-//            }
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
 
+        for (int j = 0; j < 1; j++) {
+            executorService.execute(() -> {
 
-            for (int i = 0; i < REUESTNUM; i++) {
-                //int lat = getRandomNumberInRange(400146138, 419146138);
-                //int lon = -getRandomNumberInRange(740188906, 749188906);
-                //routeGuideDemo.getFeature(409146138, -746188906);
-                Random random = new Random();
-                int index = random.nextInt(features.size());
-                int lat = features.get(index).getLocation().getLatitude();
-                int lon = features.get(index).getLocation().getLongitude();
-                info("request location: {0} , {1}", lat, lon);
-                //long start = System.nanoTime();
-                client.getFeaturesAsync(lat, lon, finishLatch);
-                //long estimatedTime = System.nanoTime() - start;
-                //logger.info("estimatedTime: " + estimatedTime);
-            }
+                RouteGuideClient client = new RouteGuideClient("192.168.21.225", 7860);
+                CountDownLatch finishLatch = new CountDownLatch(REUESTNUM);
+                long start = System.nanoTime();
+                try {
+                    for (int i = 0; i < REUESTNUM; i++) {
+                        //int lat = getRandomNumberInRange(400146138, 419146138);
+                        //int lon = -getRandomNumberInRange(740188906, 749188906);
+                        //routeGuideDemo.getFeature(409146138, -746188906);
+                        Random random = new Random();
+                        int index = random.nextInt(features.size());
+                        int lat = features.get(index).getLocation().getLatitude();
+                        int lon = features.get(index).getLocation().getLongitude();
+                        info("request location: {0} , {1}", lat, lon);
+                        //long start = System.nanoTime();
+                        client.getFeaturesAsync(lat, lon, finishLatch);
+                        //client1.getFeaturesAsync(lat, lon, finishLatch);
+                        //long estimatedTime = System.nanoTime() - start;
+                        //logger.info("estimatedTime: " + estimatedTime);
+                    }
+                    finishLatch.await(10, TimeUnit.MINUTES);
+                    client.shutdown();
 
-        } finally {
-            finishLatch.await(10,  TimeUnit.MINUTES);
-            long estimatedTime = System.nanoTime() - start;
-            logger.info("estimatedTime: " + estimatedTime);
-            client.shutdown();
+                } catch (Exception ex){
+                    ex.printStackTrace();
+                }finally {
+                    //finishLatch.await(10, TimeUnit.MINUTES);
+                    long estimatedTime = System.nanoTime() - start;
+                    logger.info("estimatedTime: " + estimatedTime);
+
+                }
+            });
         }
+
+//        long start = System.nanoTime();
+//        try {
+//            //client.recordRoute(features, 10);
+//
+////            client.getFeature(409146138, -746188906);
+////
+////            client.listFeatures(400000000, -750000000, 420000000, -730000000);
+////
+////            CountDownLatch finishLatch = client.routeChat();
+////
+////            if (!finishLatch.await(1, TimeUnit.MINUTES)) {
+////                client.warning("routeChat can not finish within 1 minutes");
+////            }
+//
+//
+//            for (int i = 0; i < REUESTNUM; i++) {
+//                //int lat = getRandomNumberInRange(400146138, 419146138);
+//                //int lon = -getRandomNumberInRange(740188906, 749188906);
+//                //routeGuideDemo.getFeature(409146138, -746188906);
+//                Random random = new Random();
+//                int index = random.nextInt(features.size());
+//                int lat = features.get(index).getLocation().getLatitude();
+//                int lon = features.get(index).getLocation().getLongitude();
+//                info("request location: {0} , {1}", lat, lon);
+//                //long start = System.nanoTime();
+//                client.getFeaturesAsync(lat, lon, finishLatch);
+//                client1.getFeaturesAsync(lat, lon, finishLatch);
+//                //long estimatedTime = System.nanoTime() - start;
+//                //logger.info("estimatedTime: " + estimatedTime);
+//            }
+//
+//        } finally {
+//            finishLatch.await(10,  TimeUnit.MINUTES);
+//            long estimatedTime = System.nanoTime() - start;
+//            logger.info("estimatedTime: " + estimatedTime);
+//            client.shutdown();
+//        }
     }
 
     private RouteNote newNote(String message, int lat, int lon) {

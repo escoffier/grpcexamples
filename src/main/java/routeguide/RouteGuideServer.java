@@ -5,9 +5,14 @@ import com.orbitz.consul.AgentClient;
 import com.orbitz.consul.Consul;
 import com.orbitz.consul.model.agent.ImmutableRegistration;
 import com.orbitz.consul.model.agent.Registration;
+import grpc.health.v1.CheckHealth;
+import grpc.health.v1.HealthGrpc;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.ServerInterceptors;
 import io.grpc.stub.StreamObserver;
+import me.dinowernli.grpc.prometheus.Configuration;
+import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
 
 import java.io.IOException;
 import java.net.URL;
@@ -25,6 +30,7 @@ public class RouteGuideServer {
 
     private final int port;
     private final Server server;
+    MonitoringServerInterceptor monitoringInterceptor;
 
     public RouteGuideServer(int port) throws IOException {
         this(port, RouteGuideUtil.getDefaultFeaturesFile());
@@ -36,22 +42,25 @@ public class RouteGuideServer {
 
     public RouteGuideServer(ServerBuilder<?> serverBuilder, int port, Collection<Feature> features) {
         this.port = port;
-        server = serverBuilder.addService(new RouteGuideService(features)).build();
-
-        Consul client =  Consul.builder().withHostAndPort(HostAndPort.fromParts("140.143.45.252", 8500))
+        monitoringInterceptor = MonitoringServerInterceptor.create(Configuration.cheapMetricsOnly());
+        //server = serverBuilder.addService(new RouteGuideService(features)).build();
+        server = serverBuilder.addService(ServerInterceptors.intercept( new RouteGuideService(features), monitoringInterceptor))
+                .addService(new HealthCheckService())
                 .build();
 
+        Consul client =  Consul.builder().withHostAndPort(HostAndPort.fromParts("192.168.21.241", 8500))
+                .build();
         AgentClient agentClient = client.agentClient();
-
         Random random = new Random();
-        String serviceId = "RouteGuideServer-" + random.nextInt();
-
+        String serviceId = "RouteGuideServer-1"; //+ random.nextInt();
         Registration service = ImmutableRegistration.builder()
                 .id(serviceId)
                 .name("RouteGuideServer")
+                .address("192.168.21.182")
                 .port(7860)
                 .tags(Collections.singletonList("tag1"))
                 .meta(Collections.singletonMap("version", "1.0"))
+                .check(Registration.RegCheck.grpc("192.168.21.182:7860", 10))
                 .build();
 
         agentClient.register(service);
@@ -94,6 +103,17 @@ public class RouteGuideServer {
         RouteGuideServer routeGuideServer = new RouteGuideServer(7860);
         routeGuideServer.start();
         routeGuideServer.blockUntilShutdown();
+    }
+
+    static class HealthCheckService extends HealthGrpc.HealthImplBase {
+        @Override
+        public void check(CheckHealth.HealthCheckRequest request, StreamObserver<CheckHealth.HealthCheckResponse> responseObserver) {
+            CheckHealth.HealthCheckResponse response = CheckHealth.HealthCheckResponse.newBuilder()
+                    .setStatus(CheckHealth.HealthCheckResponse.ServingStatus.SERVING).build();
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+            //super.check(request, responseObserver);
+        }
     }
 
     static class RouteGuideService extends RouteGuideGrpc.RouteGuideImplBase {
