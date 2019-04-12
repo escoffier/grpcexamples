@@ -14,7 +14,9 @@ import io.grpc.stub.StreamObserver;
 import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,24 +50,33 @@ public class RouteGuideServer {
                 .addService(new HealthCheckService())
                 .build();
 
-        Consul client =  Consul.builder().withHostAndPort(HostAndPort.fromParts("192.168.21.241", 8500))
-                .build();
-        AgentClient agentClient = client.agentClient();
-        Random random = new Random();
-        String serviceId = "RouteGuideServer-1"; //+ random.nextInt();
-        Registration service = ImmutableRegistration.builder()
-                .id(serviceId)
-                .name("RouteGuideServer")
-                .address("192.168.21.182")
-                .port(7860)
-                .tags(Collections.singletonList("tag1"))
-                .meta(Collections.singletonMap("version", "1.0"))
-                .check(Registration.RegCheck.grpc("192.168.21.182:7860", 10))
-                .build();
-
-        agentClient.register(service);
 
         //agentClient.pass(serviceId);
+    }
+
+    public void init(String host, int port, String serverHost, int serverPort) {
+        try {
+            logger.info("connecting consul " + host+ ":"+ port);
+            //Consul client =  Consul.builder().withHostAndPort(HostAndPort.fromParts("192.168.21.241", 8500))
+            Consul client =  Consul.builder().withHostAndPort(HostAndPort.fromParts(host, port))
+                    .build();
+            AgentClient agentClient = client.agentClient();
+            Random random = new Random();
+            String serviceId = "RouteGuideServer-1"; //+ random.nextInt();
+            Registration service = ImmutableRegistration.builder()
+                    .id(serviceId)
+                    .name("RouteGuideServer")
+                    .address(serverHost)
+                    .port(serverPort)
+                    .tags(Collections.singletonList("tag1"))
+                    .meta(Collections.singletonMap("version", "1.0"))
+                    .check(Registration.RegCheck.grpc(new StringBuilder(serverHost).append(":").append(serverPort).toString(), 10))
+                    .build();
+
+            agentClient.register(service);
+        } catch (Exception ex) {
+            logger.info(ex.getMessage());
+        }
     }
 
     public void start() throws IOException {
@@ -100,7 +111,21 @@ public class RouteGuideServer {
     }
 
     public static void main(String[] args) throws Exception {
-        RouteGuideServer routeGuideServer = new RouteGuideServer(7860);
+        if(args.length == 0) {
+            logger.info("need paramater");
+            return;
+        }
+
+        logger.info(args[0]);
+        Properties prop = new Properties();
+        InputStream inputStream = new FileInputStream(args[0]);
+        prop.load(inputStream);
+        String serverHost = prop.getProperty("server.host");
+        int serverPort = Integer.parseInt(prop.getProperty("server.port"));
+
+        RouteGuideServer routeGuideServer = new RouteGuideServer(serverPort);
+        routeGuideServer.init(prop.getProperty("consul.host"), Integer.parseInt(prop.getProperty("consul.port")),
+                serverHost, serverPort);
         routeGuideServer.start();
         routeGuideServer.blockUntilShutdown();
     }

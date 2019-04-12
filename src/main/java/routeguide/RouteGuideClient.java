@@ -41,12 +41,17 @@ public class RouteGuideClient {
         channel = channelBuilder.build();
         blockingStub = RouteGuideGrpc.newBlockingStub(channel);
         asyncStub = RouteGuideGrpc.newStub(channel);
+        try {
+            loadBalancer = new LoadBalancer("192.168.21.248", 8500);
+            HostAndPort hostAndPort = loadBalancer.getService("RouteGuideServer");
+            info(hostAndPort.toString());
+            loadBalancer.subscibe("RouteGuideServer");
+        } catch (Exception ex) {
+            info(ex.getMessage());
+        }
 
-        loadBalancer = new LoadBalancer("192.168.21.248", 8500);
-        HostAndPort hostAndPort = loadBalancer.getService("RouteGuideServer");
-        info(hostAndPort.toString());
 
-        loadBalancer.subscibe("RouteGuideServer");
+
     }
 
     public void shutdown() throws InterruptedException {
@@ -265,7 +270,7 @@ public class RouteGuideClient {
             return;
         }
 
-        final int REUESTNUM = 1;
+        final int REUESTNUM = 350000;
 
         //RouteGuideClient client = new RouteGuideClient("192.168.21.225", 7860);
         //RouteGuideClient client1 = new RouteGuideClient("192.168.21.225", 7860);
