@@ -13,6 +13,8 @@ import io.grpc.ServerInterceptors;
 import io.grpc.stub.StreamObserver;
 import me.dinowernli.grpc.prometheus.Configuration;
 import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,13 +24,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+//import java.util.logging.Logger;
 
 import static java.lang.Math.*;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 public class RouteGuideServer {
-    private static final Logger logger = Logger.getLogger(RouteGuideServer.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(RouteGuideServer.class.getName());
 
     private final int port;
     private final Server server;
@@ -54,15 +56,15 @@ public class RouteGuideServer {
         //agentClient.pass(serviceId);
     }
 
-    public void init(String host, int port, String serverHost, int serverPort) {
+    public void init(String host, int port, String serverHost, int serverPort, int id) {
         try {
             logger.info("connecting consul " + host+ ":"+ port);
             //Consul client =  Consul.builder().withHostAndPort(HostAndPort.fromParts("192.168.21.241", 8500))
             Consul client =  Consul.builder().withHostAndPort(HostAndPort.fromParts(host, port))
                     .build();
             AgentClient agentClient = client.agentClient();
-            Random random = new Random();
-            String serviceId = "RouteGuideServer-1"; //+ random.nextInt();
+            //Random random = new Random();
+            String serviceId = "RouteGuideServer-" + id; //+ random.nextInt();
             Registration service = ImmutableRegistration.builder()
                     .id(serviceId)
                     .name("RouteGuideServer")
@@ -125,7 +127,8 @@ public class RouteGuideServer {
 
         RouteGuideServer routeGuideServer = new RouteGuideServer(serverPort);
         routeGuideServer.init(prop.getProperty("consul.host"), Integer.parseInt(prop.getProperty("consul.port")),
-                serverHost, serverPort);
+                serverHost, serverPort,
+                Integer.parseInt(prop.getProperty("service.id")));
         routeGuideServer.start();
         routeGuideServer.blockUntilShutdown();
     }
@@ -153,6 +156,7 @@ public class RouteGuideServer {
         @Override
         public void getFeature(Point request, StreamObserver<Feature> responseObserver) {
             //super.getFeature(request, responseObserver);
+            logger.info("######## " + responseObserver.toString());
             responseObserver.onNext(checkFeature(request));
             responseObserver.onCompleted();
         }
@@ -210,7 +214,7 @@ public class RouteGuideServer {
 
                 @Override
                 public void onError(Throwable t) {
-                    logger.log(Level.WARNING, "recordRoute cancelled");
+                    logger.info( "recordRoute cancelled");
                 }
 
                 @Override
@@ -247,7 +251,7 @@ public class RouteGuideServer {
 
                 @Override
                 public void onError(Throwable t) {
-                    logger.log(Level.WARNING, "routeChat cancelled");
+                    logger.info( "routeChat cancelled");
                 }
 
                 @Override

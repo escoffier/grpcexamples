@@ -1,0 +1,26 @@
+{
+  "datacenter": "east-aws",
+  "data_dir": "./consul1",
+  "log_level": "INFO",
+  "node_name": "foobar",
+  "server": true,
+  "client_addr": "192.168.1.215",
+  "bind_addr": "192.168.1.215",
+  "addresses": {
+    "http": "192.168.1.215",
+    "dns": "192.168.1.215"
+  },
+  "ports": {
+    "http": 8500,
+    "server": 8300,
+    "dns": 8600,
+    "grpc": 8502
+  },
+  "check": {
+    "id": "mem-util",
+    "name": "Service health status",
+    "grpc": "192.168.1.209:7860",
+    "grpc_use_tls": false,
+    "interval": "10s"
+  }
+}
