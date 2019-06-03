@@ -9,8 +9,5 @@
         <module name="grpc-examples" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="resilience4jexamples" target="8" />
-    </bytecodeTargetLevel>
   </component>
 </project>

@@ -43,6 +43,7 @@ public class RouteGuideClient {
         this(ManagedChannelBuilder
                 //.forAddress(host, port)
                 .forTarget("consul://"+ host+ ":" + port)
+                .intercept(new HeaderClientInterceptor())
                 .defaultLoadBalancingPolicy("round_robin")
                 .nameResolverFactory(new ConsulNameResolver.ConsulNameResolverProvider("RouteGuideServer", 10, false, null))
                 .usePlaintext());
@@ -317,17 +318,17 @@ public class RouteGuideClient {
 
         ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-        RouteGuideClient client = new RouteGuideClient("192.168.1.215", 8500);
-        for (int i = 0; i < 1000; i++) {
+        RouteGuideClient client = new RouteGuideClient("192.168.1.209", 8500);
+        for (int i = 0; i < 100; i++) {
             Random random = new Random();
             int index = random.nextInt(features.size());
             int lat = features.get(index).getLocation().getLatitude();
             int lon = features.get(index).getLocation().getLongitude();
             client.getFeature(lat, lon);
             //client.listFeatures(400000000, -750000000, 420000000, -730000000);
-            logger.info("request location: "+ lat + ", "+  lon);
-            client.shutdown();
-            Thread.sleep(1000);
+            //logger.info("request location: "+ lat + ", "+  lon);
+            //client.shutdown();
+            Thread.sleep(10);
         }
 
         for (int j = 0; j < 1; j++) {

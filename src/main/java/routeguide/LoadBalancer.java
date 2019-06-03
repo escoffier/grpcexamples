@@ -93,22 +93,22 @@ public class LoadBalancer {
     }
 
     public void subscribe(String serviceName) {
-        serviceHealthCache = ServiceHealthCache
-                .newCache(client.healthClient(), serviceName);
-
-        serviceHealthCache.addListener((Map<ServiceHealthKey, ServiceHealth> newValues)->{
-            serviceList = newValues.values().stream().map(sh ->  sh.getService()).collect(Collectors.toList());
-            logger.info(serviceList.toString());
-            countDownLatch.countDown();
-            // serviceList.clear();
-        });
-        serviceHealthCache.start();
-        try {
-            countDownLatch.await();
-            logger.info("Got service");
-        } catch (InterruptedException ex) {
-            logger.warn(ex.getMessage());
-        }
+//        serviceHealthCache = ServiceHealthCache
+//                .newCache(client.healthClient(), serviceName);
+//
+//        serviceHealthCache.addListener((Map<ServiceHealthKey, ServiceHealth> newValues)->{
+//            serviceList = newValues.values().stream().map(sh ->  sh.getService()).collect(Collectors.toList());
+//            logger.info(serviceList.toString());
+//            countDownLatch.countDown();
+//            // serviceList.clear();
+//        });
+//        serviceHealthCache.start();
+//        try {
+//            countDownLatch.await();
+//            logger.info("Got service");
+//        } catch (InterruptedException ex) {
+//            logger.warn(ex.getMessage());
+//        }
     }
 
     public Optional<Service> getAvailableService() {
