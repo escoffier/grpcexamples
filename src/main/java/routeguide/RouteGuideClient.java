@@ -12,7 +12,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
+//import java.util.logging.Level;
 //import java.util.logging.Logger;
 import com.google.common.annotations.VisibleForTesting;
 import io.grpc.stub.StreamObserver;
@@ -45,7 +45,7 @@ public class RouteGuideClient {
                 .forTarget("consul://"+ host+ ":" + port)
                 .intercept(new HeaderClientInterceptor())
                 .defaultLoadBalancingPolicy("round_robin")
-                .nameResolverFactory(new ConsulNameResolver.ConsulNameResolverProvider("RouteGuideServer", 10, false, null))
+                .nameResolverFactory(new ConsulNameResolver.ConsulNameResolverProvider("RouteGuideServer", null))
                 .usePlaintext());
     }
     /** Construct client for accessing RouteGuide server at {@code host:port}. */

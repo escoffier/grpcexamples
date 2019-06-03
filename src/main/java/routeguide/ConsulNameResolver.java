@@ -130,10 +130,10 @@ public class ConsulNameResolver extends NameResolver {
         private boolean ignoreConsul;
         private List<String> hostPorts;
 
-        public ConsulNameResolverProvider(String serviceName, int pauseInSeconds, boolean ignoreConsul, List<String> hostPorts) {
+        public ConsulNameResolverProvider(String serviceName, List<String> hostPorts) {
             this.serviceName = serviceName;
-            this.pauseInSeconds = pauseInSeconds;
-            this.ignoreConsul = ignoreConsul;
+//            this.pauseInSeconds = pauseInSeconds;
+//            this.ignoreConsul = ignoreConsul;
             this.hostPorts = hostPorts;
         }
 

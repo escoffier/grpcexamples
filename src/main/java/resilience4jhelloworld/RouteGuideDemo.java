@@ -7,20 +7,21 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.vavr.CheckedFunction0;
 import io.vavr.control.Try;
+import org.slf4j.LoggerFactory;
 import routeguide.*;
 
 import java.net.URL;
-import java.util.Collection;
+import org.slf4j.Logger;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+//import java.util.logging.Logger;
 
 public class RouteGuideDemo {
     //private static RouteGuideClient routeGuideClient;
-    private static Logger logger = Logger.getLogger(RouteGuideDemo.class.getName());
+    private static Logger logger = LoggerFactory.getLogger(RouteGuideDemo.class.getName());
     private Bulkhead bulkhead;
 
     private  static List<Feature> features;
@@ -29,14 +30,12 @@ public class RouteGuideDemo {
     private final RouteGuideGrpc.RouteGuideBlockingStub blockingStub;
 
     RouteGuideDemo(String host, int port) {
-        this(ManagedChannelBuilder.forAddress(host, port).usePlaintext());
-
-        //routeGuideClient = new RouteGuideClient("192", 7860);
-
-    }
-
-    private static void info(String msg, Object... params) {
-        logger.log(Level.INFO, msg, params);
+        this(ManagedChannelBuilder
+                //.forAddress(host, port)
+                .forTarget("consul://"+ host+ ":" + port)
+                .defaultLoadBalancingPolicy("round_robin")
+                .nameResolverFactory(new ConsulNameResolver.ConsulNameResolverProvider("RouteGuideServer", null))
+                .usePlaintext());
     }
 
     RouteGuideDemo(ManagedChannelBuilder<?> channelBuilder) {
@@ -61,7 +60,7 @@ public class RouteGuideDemo {
     public void getFeature(int lat, int lon) {
         //;
         CheckedFunction0<Feature> function0 =  Bulkhead.decorateCheckedSupplier(bulkhead, () -> {
-            info("getFeature location: {0} {1}", lat, lon);
+            logger.info("getFeature location: {} {}", lat, lon);
             Point request = Point.newBuilder().setLatitude(lat).setLongitude(lon).build();
             Feature feature = blockingStub.getFeature(request);
             return feature;
@@ -73,12 +72,12 @@ public class RouteGuideDemo {
 
         if (RouteGuideUtil.exists(feature)) {
 
-            info("Found a feature called \"{0}\" at {1}, {2}",
+            logger.info("Found a feature called \"{}\" at {}, {}",
                     feature.getName(),
                     RouteGuideUtil.getLatitude(feature.getLocation()),
                     RouteGuideUtil.getLongitude(feature.getLocation()));
         } else {
-            info("Found no feature at {0}, {1}",
+            logger.info("Found no feature at {}, {}",
                     RouteGuideUtil.getLatitude(feature.getLocation()),
                     RouteGuideUtil.getLongitude(feature.getLocation()));
         }
@@ -101,7 +100,7 @@ public class RouteGuideDemo {
 
     public static void main(String[] args) throws Exception {
         RouteGuideDemo.init();
-        RouteGuideDemo routeGuideDemo = new RouteGuideDemo("140.143.45.252", 7860);
+        RouteGuideDemo routeGuideDemo = new RouteGuideDemo("192.168.1.209", 8500);
 
         //int lat = (int) 19146138 * Math.random();
 
@@ -117,7 +116,7 @@ public class RouteGuideDemo {
                     int index = r.nextInt(features.size());
                     int lat = features.get(index).getLocation().getLatitude();
                     int lon = features.get(index).getLocation().getLongitude();
-                    info("request location: {0} , {1}", lat, lon);
+                    logger.info("request location: {} , {}", lat, lon);
                     long start = System.nanoTime();
                     routeGuideDemo.getFeature(lat, lon);
                     long estimatedTime = System.nanoTime() - start;
