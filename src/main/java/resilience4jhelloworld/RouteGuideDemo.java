@@ -7,16 +7,15 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.vavr.CheckedFunction0;
 import io.vavr.control.Try;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import routeguide.*;
 
 import java.net.URL;
-import org.slf4j.Logger;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 //import java.util.logging.Logger;
 
 public class RouteGuideDemo {
@@ -100,7 +99,7 @@ public class RouteGuideDemo {
 
     public static void main(String[] args) throws Exception {
         RouteGuideDemo.init();
-        RouteGuideDemo routeGuideDemo = new RouteGuideDemo("192.168.1.209", 8500);
+        RouteGuideDemo routeGuideDemo = new RouteGuideDemo("192.168.21.248", 8500);
 
         //int lat = (int) 19146138 * Math.random();
 

@@ -1,0 +1,41 @@
+{
+  "datacenter": "east-aws",
+  "data_dir": "./consul-data",
+  "log_level": "INFO",
+  "node_name": "service-client-225",
+  "server": false,
+  "client_addr": "192.168.21.225",
+  "bind_addr": "192.168.21.225",
+  "ports": {
+    "http": 8500,
+    "https": 8501,
+    "server": 8300,
+    "dns": 8600,
+    "grpc": 8502,
+    "serf_lan": 8301,
+    "serf_wan": 8302
+  },
+  "checks": [
+    {
+      "id": "grpc-check-0",
+      "name": "Service health status",
+      "grpc": "192.168.21.225:7860",
+      "grpc_use_tls": false,
+      "interval": "10s"
+    },
+    {
+      "id": "grpc-check-1",
+      "name": "Service health status",
+      "grpc": "192.168.21.225:7870",
+      "grpc_use_tls": false,
+      "interval": "10s"
+    },
+    {
+      "id": "grpc-check-0",
+      "name": "Service health status",
+      "grpc": "192.168.21.225:7880",
+      "grpc_use_tls": false,
+      "interval": "10s"
+    }
+  ]
+}

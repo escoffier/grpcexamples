@@ -1,0 +1,19 @@
+{
+  "datacenter": "east-aws",
+  "bootstrap_expect": 3,
+  "data_dir": "./consul-data",
+  "log_level": "INFO",
+  "node_name": "routeguide-node-0",
+  "server": true,
+  "client_addr": "192.168.1.215",
+  "bind_addr": "192.168.1.215",
+  "ports": {
+    "http": 8500,
+    "https": 8501,
+    "server": 8300,
+    "dns": 8600,
+    "grpc": 8502,
+    "serf_lan": 8301,
+    "serf_wan": 8302
+  }
+}

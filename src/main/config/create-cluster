@@ -1,0 +1,30 @@
+node 0:
+../consul agent -config-dir "config"
+
+node-0's serf_lan is "192.168.21.248:8301"
+
+node-1:
+../consul agent -config-dir "config" -retry-join "192.168.21.248:8301"
+
+node-2:
+../consul agent -config-dir "config" -retry-join "192.168.21.248:8301"
+
+
+
+agent client:
+../consul agent -config-dir "config" -retry-join "192.168.21.248:8301"
+
+
+
+
+or:
+
+#!/bin/bash
+
+./consul agent -server -bind=192.168.21.241 -data-dir=./data -client=192.168.21.241 -config-dir=./config -enable-local-script-checks -node=241 -bootstrap-expect=3
+
+
+
+
+start service:
+nohup java -jar RouteGuideServer.jar server.properties >/dev/null 2>&1 &
