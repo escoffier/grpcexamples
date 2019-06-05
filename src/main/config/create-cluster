@@ -12,7 +12,7 @@ node-2:
 
 
 agent client:
-../consul agent -config-dir "config" -retry-join "192.168.21.248:8301"
+../consul agent -config-dir "config" -retry-join "192.168.21.248:8301"  -log-file "./log/" -log-rotate-bytes 10000000
 
 
 
