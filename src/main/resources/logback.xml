@@ -1,5 +1,4 @@
-<configuration>
-
+<configuration scan="true">
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>logFile.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -9,7 +8,6 @@
             <!-- keep 30 days' worth of history capped at 3GB total size -->
             <maxHistory>30</maxHistory>
             <totalSizeCap>3GB</totalSizeCap>
-
         </rollingPolicy>
 
         <encoder>
@@ -25,6 +23,13 @@
             <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
         </encoder>
     </appender>
+
+    <logger name="routeguide" level="INFO">
+        <appender-ref ref="STDOUT" />
+    </logger>>
+    <logger name="resilience4jhelloworld" level="INFO" >
+        <appender-ref ref="STDOUT"/>
+    </logger>
 
     <root level="debug">
         <appender-ref ref="FILE" />

@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="target">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/grpc-server/target/original-HelloWorldServer.jar!/" />
+      <root url="jar://$PROJECT_DIR$/grpc-server/target/HelloWorldServer.jar!/" />
+      <root url="jar://$PROJECT_DIR$/grpc-server/target/RouteGuideServer.jar!/" />
+      <root url="jar://$PROJECT_DIR$/grpc-server/target/original-RouteGuideServer.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

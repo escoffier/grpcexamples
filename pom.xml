@@ -4,20 +4,33 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com</groupId>
-    <artifactId>grpc-examples</artifactId>
+    <groupId>com.grpcexamples</groupId>
+    <artifactId>grpcexamples</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
     <properties>
+<!--        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
+<!--        <grpc.version>1.19.0</grpc.version>&lt;!&ndash; CURRENT_GRPC_VERSION &ndash;&gt;-->
+<!--        <protobuf.version>3.5.1</protobuf.version>-->
+<!--        <protoc.version>3.5.1-1</protoc.version>-->
+<!--        <netty.tcnative.version>2.0.7.Final</netty.tcnative.version>-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <grpc.version>1.19.0</grpc.version><!-- CURRENT_GRPC_VERSION -->
-        <protobuf.version>3.5.1</protobuf.version>
-        <protoc.version>3.5.1-1</protoc.version>
-        <netty.tcnative.version>2.0.7.Final</netty.tcnative.version>
+        <grpc.version>1.30.0</grpc.version><!-- CURRENT_GRPC_VERSION -->
+        <protobuf.version>3.12.0</protobuf.version>
+        <protoc.version>3.12.0</protoc.version>
         <!-- required for jdk9 -->
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
+    <modules>
+        <module>common</module>
+        <module>grpc-client</module>
+        <module>grpc-server</module>
+        <module>grpc-client-sentinel</module>
+        <module>grpc-client-resilience4j</module>
+    </modules>
     <dependencies>
         <dependency>
             <groupId>io.grpc</groupId>
@@ -75,16 +88,6 @@
             <version>1.9.5</version>
             <scope>test</scope>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>io.grpc</groupId>-->
-            <!--<artifactId>grpc-core</artifactId>-->
-            <!--<version>1.19.0</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>com.netflix.hystrix</groupId>-->
-            <!--<artifactId>hystrix-core</artifactId>-->
-            <!--<version>1.5.18</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>com.netflix.rxjava</groupId>
             <artifactId>rxjava-core</artifactId>
@@ -95,13 +98,7 @@
             <artifactId>hystrix-core</artifactId>
             <version>1.5.18</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>com.netflix.hystrix</groupId>-->
-            <!--<artifactId>hystrix-core</artifactId>-->
-            <!--<version>1.5.18</version>-->
-        <!--</dependency>-->
 
-        <!--resilience4j dependency-->
         <dependency>
             <groupId>io.github.resilience4j</groupId>
             <artifactId>resilience4j-circuitbreaker</artifactId>
@@ -159,139 +156,140 @@
             <artifactId>cglib</artifactId>
             <version>3.2.4</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-test</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-x-discovery</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-x-async</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+            <version>4.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.errorprone</groupId>
+            <artifactId>error_prone_annotations</artifactId>
+            <version>2.3.4</version> <!-- prefer to use 2.3.3 or later -->
+        </dependency>
     </dependencies>
-    <repositories>
-        <repository>
-            <id>dinowernli-github-repo</id>
-            <url>https://raw.github.com/dinowernli/maven-repos/master</url>
-        </repository>
-    </repositories>
-
-    <build>
-        <finalName>${jarName}</finalName>
-        <extensions>
-            <extension>
-                <groupId>kr.motd.maven</groupId>
-                <artifactId>os-maven-plugin</artifactId>
-                <version>1.5.0.Final</version>
-            </extension>
-        </extensions>
-        <plugins>
-            <plugin>
-                <groupId>org.xolstice.maven.plugins</groupId>
-                <artifactId>protobuf-maven-plugin</artifactId>
-                <version>0.5.1</version>
-                <configuration>
-                    <protocArtifact>com.google.protobuf:protoc:3.5.1-1:exe:${os.detected.classifier}</protocArtifact>
-                    <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.18.0:exe:${os.detected.classifier}</pluginArtifact>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>compile-custom</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!--<plugin>-->
-                <!--<artifactId>maven-assembly-plugin</artifactId>-->
-                <!--<version>3.0.0</version>-->
-                <!--<configuration>-->
-                    <!--<archive>-->
-                        <!--&lt;!&ndash; MainClass in mainfest make a executable jar &ndash;&gt;-->
-                        <!--<manifest>-->
-                            <!--<mainClass>routeguide.RouteGuideServer</mainClass>-->
-                        <!--</manifest>-->
-                    <!--</archive>-->
-                    <!--&lt;!&ndash; get all project dependencies &ndash;&gt;-->
-                    <!--<descriptorRefs>-->
-                        <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
-                    <!--</descriptorRefs>-->
-                <!--</configuration>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>make-assembly</id> &lt;!&ndash; this is used for inheritance merges &ndash;&gt;-->
-                        <!--<phase>package</phase> &lt;!&ndash; bind to the packaging phase &ndash;&gt;-->
-                        <!--<goals>-->
-                            <!--<goal>single</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
-                <executions>
-                    <!-- Run shade goal on package phase -->
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <transformers>
-                                <!-- add Main-Class to manifest file -->
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <!--<mainClass>helloworld.HelloWorldServer</mainClass>-->
-                                    <mainClass>${appname}</mainClass>
-                                </transformer>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+<!--    <repositories>-->
+<!--        <repository>-->
+<!--            <id>dinowernli-github-repo</id>-->
+<!--            <url>https://raw.github.com/dinowernli/maven-repos/master</url>-->
+<!--        </repository>-->
+<!--    </repositories>-->
 
 
-        </plugins>
-    </build>
 
-    <profiles>
-        <profile>
-            <id>HelloWorldServer</id>
-            <activation>
-                <property>
-                    <name>app</name>
-                    <value>HelloWorldServer</value>
-                </property>
-            </activation>
-            <properties>
-                <appname>helloworld.HelloWorldServer</appname>
-                <jarName>HelloWorldServer</jarName>
-            </properties>
-        </profile>
+<!--    <build>-->
+<!--        <finalName>${jarName}</finalName>-->
+<!--        <extensions>-->
+<!--            <extension>-->
+<!--                <groupId>kr.motd.maven</groupId>-->
+<!--                <artifactId>os-maven-plugin</artifactId>-->
+<!--                <version>1.5.0.Final</version>-->
+<!--            </extension>-->
+<!--        </extensions>-->
+<!--        <plugins>-->
+<!--            <plugin>-->
+<!--                <groupId>org.xolstice.maven.plugins</groupId>-->
+<!--                <artifactId>protobuf-maven-plugin</artifactId>-->
+<!--                <version>0.5.1</version>-->
+<!--                <configuration>-->
+<!--                    <protocArtifact>com.google.protobuf:protoc:3.5.1-1:exe:${os.detected.classifier}</protocArtifact>-->
+<!--                    <pluginId>grpc-java</pluginId>-->
+<!--                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.18.0:exe:${os.detected.classifier}</pluginArtifact>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>compile</goal>-->
+<!--                            <goal>compile-custom</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
 
-        <profile>
-            <id>RouteGuideServer</id>
-            <activation>
-                <property>
-                    <name>app</name>
-                    <value>RouteGuideServer</value>
-                </property>
-            </activation>
-            <properties>
-                <appname>routeguide.RouteGuideServer</appname>
-                <jarName>RouteGuideServer</jarName>
-            </properties>
-        </profile>
 
-        <profile>
-            <id>RouteGuideClient</id>
-            <activation>
-                <property>
-                    <name>app</name>
-                    <value>RouteGuideClient</value>
-                </property>
-            </activation>
-            <properties>
-                <appname>routeguide.RouteGuideClient</appname>
-                <jarName>RouteGuideClient</jarName>
-            </properties>
-        </profile>
-    </profiles>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-shade-plugin</artifactId>-->
+<!--                <version>2.3</version>-->
+<!--                <executions>-->
+<!--                    &lt;!&ndash; Run shade goal on package phase &ndash;&gt;-->
+<!--                    <execution>-->
+<!--                        <phase>package</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>shade</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <transformers>-->
+<!--                                &lt;!&ndash; add Main-Class to manifest file &ndash;&gt;-->
+<!--                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
+<!--                                    &lt;!&ndash;<mainClass>helloworld.HelloWorldServer</mainClass>&ndash;&gt;-->
+<!--                                    <mainClass>${appname}</mainClass>-->
+<!--                                </transformer>-->
+<!--                            </transformers>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
+<!--        </plugins>-->
+<!--    </build>-->
+
+<!--    <profiles>-->
+<!--        <profile>-->
+<!--            <id>HelloWorldServer</id>-->
+<!--            <activation>-->
+<!--                <property>-->
+<!--                    <name>app</name>-->
+<!--                    <value>HelloWorldServer</value>-->
+<!--                </property>-->
+<!--            </activation>-->
+<!--            <properties>-->
+<!--                <appname>helloworld.HelloWorldServer</appname>-->
+<!--                <jarName>HelloWorldServer</jarName>-->
+<!--            </properties>-->
+<!--        </profile>-->
+
+<!--        <profile>-->
+<!--            <id>RouteGuideServer</id>-->
+<!--            <activation>-->
+<!--                <property>-->
+<!--                    <name>app</name>-->
+<!--                    <value>RouteGuideServer</value>-->
+<!--                </property>-->
+<!--            </activation>-->
+<!--            <properties>-->
+<!--                <appname>routeguide.RouteGuideServer</appname>-->
+<!--                <jarName>RouteGuideServer</jarName>-->
+<!--            </properties>-->
+<!--        </profile>-->
+
+<!--        <profile>-->
+<!--            <id>RouteGuideClient</id>-->
+<!--            <activation>-->
+<!--                <property>-->
+<!--                    <name>app</name>-->
+<!--                    <value>RouteGuideClient</value>-->
+<!--                </property>-->
+<!--            </activation>-->
+<!--            <properties>-->
+<!--                <appname>routeguide.RouteGuideClient</appname>-->
+<!--                <jarName>RouteGuideClient</jarName>-->
+<!--            </properties>-->
+<!--        </profile>-->
+<!--    </profiles>-->
 
 </project>

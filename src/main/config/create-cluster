@@ -23,7 +23,7 @@ or:
 
 ./consul agent -server -bind=192.168.21.241 -data-dir=./data -client=192.168.21.241 -config-dir=./config -enable-local-script-checks -node=241 -bootstrap-expect=3
 
-
+s
 
 
 start service:
