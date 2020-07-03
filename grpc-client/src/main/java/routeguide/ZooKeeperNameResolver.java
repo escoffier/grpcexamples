@@ -155,5 +155,11 @@ public class ZooKeeperNameResolver extends NameResolver {
         public NameResolver newNameResolver(URI targetUri, Helper helper) {
             return new ZooKeeperNameResolver(targetUri);
         }
+
+//        @Override
+//        public NameResolver newNameResolver(URI targetUri, Args args) {
+////            return super.newNameResolver(targetUri, args);
+//            return new ZooKeeperNameResolver(targetUri);
+//        }
     }
 }

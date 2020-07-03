@@ -1,5 +1,7 @@
 package routeguide;
 
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +38,8 @@ public class RouteGuideService extends RouteGuideGrpc.RouteGuideImplBase {
         //super.getFeature(request, responseObserver);
         logger.info("######## " + responseObserver.toString());
         responseObserver.onNext(checkFeature(request));
-        responseObserver.onCompleted();
+//        responseObserver.onCompleted();
+        responseObserver.onError(new StatusRuntimeException(Status.INVALID_ARGUMENT.withDescription("server error").withCause(new IOException("server exception"))));
     }
 
     @Override

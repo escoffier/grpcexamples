@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="f95a5e02-6cf6-4457-aa42-7145e98b4963" name="raspberrypi">
+        <fileTransfer rootFolder="/home/pi/workspace/grpc" accessType="SFTP" host="192.168.1.84" port="22" sshConfigId="57245e14-cbc3-42e7-b3b4-cfde8caf6e78" sshConfig="pi@192.168.1.84:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

@@ -12,14 +12,14 @@
     <groupId>com.grpcexamples</groupId>
     <artifactId>grpc-client</artifactId>
     <version>1.0-SNAPSHOT</version>
-<!--    <packaging>jar</packaging>-->
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>com.grpcexamples</groupId>
             <artifactId>common</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
+<!--            <scope>compile</scope>-->
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -97,6 +97,19 @@
             <properties>
                 <appname>helloworld.HelloWorldClient</appname>
                 <jarName>HelloWorldClient</jarName>
+            </properties>
+        </profile>
+        <profile>
+            <id>RouteGuideClient</id>
+            <activation>
+                <property>
+                    <name>app</name>
+                    <value>RouteGuideClient</value>
+                </property>
+            </activation>
+            <properties>
+                <appname>routeguide.RouteGuideClient</appname>
+                <jarName>RouteGuideClient</jarName>
             </properties>
         </profile>
     </profiles>

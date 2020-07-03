@@ -370,9 +370,9 @@ public class RouteGuideClient {
             ex.printStackTrace();
             return;
         }
-//        NameResolverProvider nameResolverProvider = new ZooKeeperNameResolver.ZooKeeperNameResolverProvider("RouteGuideService");
-//        RouteGuideClient client = new RouteGuideClient("192.168.254.131", 2181, nameResolverProvider);
-        RouteGuideClient localClient = new RouteGuideClient("127.0.0.1", 7860);
+        NameResolverProvider nameResolverProvider = new ZooKeeperNameResolver.ZooKeeperNameResolverProvider("RouteGuideService");
+        RouteGuideClient client = new RouteGuideClient("192.168.1.209", 2181, nameResolverProvider);
+//        RouteGuideClient localClient = new RouteGuideClient("192.168.1.209", 7860);
 
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
@@ -382,22 +382,36 @@ public class RouteGuideClient {
 
                 switch (param) {
                     case "quit" :
+                        logger.info("quit");
+                        client.shutdown();
                         return;
                     case "recordroute":
                     {
                         try {
-                            localClient.recordRoute(features, 20);
+                            client.recordRoute(features, 20);
                         } catch (InterruptedException ex) {
                             ex.printStackTrace();
                         }
                         break;
                     }
-
+                    case "get": {
+                        Random random = new Random();
+                        int index = random.nextInt(features.size());
+                        int lat = features.get(index).getLocation().getLatitude();
+                        int lon = features.get(index).getLocation().getLongitude();
+                        client.getFeature(lat, lon);
+                        break;
+                    }
+                    default:
+                        logger.info("invalid param");
+                        break;
                 }
             } catch (IOException ex) {
                 continue;
             }
         }
+
+
 
 //        NameResolverProvider nameResolverProvider = new ZooKeeperNameResolver.ZooKeeperNameResolverProvider("RouteGuideService");
 ////        RouteGuideClient client = new RouteGuideClient("192.168.254.131", 2181, nameResolverProvider);

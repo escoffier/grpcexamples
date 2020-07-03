@@ -13,11 +13,5 @@
         <module name="grpc-client-sentinel" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="grpc-examples" target="1.8" />
-      <module name="grpc-server (1)" target="1.8" />
-      <module name="grpcclient" target="1.8" />
-      <module name="grpcserver" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>
